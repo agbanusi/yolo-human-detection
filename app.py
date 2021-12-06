@@ -89,4 +89,4 @@ def get_detections_by_alternate():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.environ.get('PORT',8080), debug=true)
+    app.run(host='0.0.0.0', port=os.environ.get('PORT',8080))
