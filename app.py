@@ -29,7 +29,7 @@ def get_detections_by_image_files():
     # create list for final response
     responses =[]
    
-    classIds, scores, boxes = model.detect(image_data, confThreshold=0.55, nmsThreshold=0.325)
+    classIds, scores, boxes = model.detect(image_data, confThreshold=0.5, nmsThreshold=0.25)
     
     for (classId, score, box) in zip(classIds, scores, boxes):
         try:
