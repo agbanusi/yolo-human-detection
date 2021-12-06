@@ -25,6 +25,8 @@ def get_detections_by_image_files():
     npimg = np.fromfile(filestr, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
     print(img)
+    print(net, model)
+    
 
     # create list for final response
     responses =[]
