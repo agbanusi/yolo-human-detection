@@ -20,9 +20,9 @@ model.setInputParams(scale=1 / 255, size=(416, 416), swapRB=True)
 @app.route('/detections/by-image-files', methods=['POST'])
 def get_detections_by_image_files():
     #read image file string data
-    filestr = request.files['image']
+    filestr = request.files['image'].read()
     #convert string data to numpy array
-    npimg = np.fromfile(filestr, np.uint8)
+    npimg = np.fromstring(filestr, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
     img = cv2.resize(img, (416, 416))
     # create list for final response
@@ -53,9 +53,10 @@ def get_detections_by_image_files():
 
 @app.route('/detections/by-alternate', methods=['POST'])
 def get_detections_by_alternate():
-    filestr = request.files['image']
+    #read image file string data
+    filestr = request.files['image'].read()
     #convert string data to numpy array
-    npimg = np.fromfile(filestr, np.uint8)
+    npimg = np.fromstring(filestr, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
     blob = cv2.dnn.blobFromImage(img, 1/255,(416,416),[0,0,0],crop=False)
     net.setInput(blob)
