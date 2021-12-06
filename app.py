@@ -20,16 +20,18 @@ model.setInputParams(scale=1 / 255, size=(416, 416), swapRB=True)
 @app.route('/detections/by-image-files', methods=['POST'])
 def get_detections_by_image_files():
     #read image file string data
-    filestr = request.files['image'].read()
+    filestr = request.files['image']
     #convert string data to numpy array
-    npimg = np.fromstring(filestr, np.uint8)
+    npimg = np.fromfile(filestr, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-    image_data = cv2.resize(img, (input_size, input_size))
+    img = cv2.resize(img, (416, 416))
+    print(img)
 
     # create list for final response
     responses =[]
    
-    classIds, scores, boxes = model.detect(image_data, confThreshold=0.5, nmsThreshold=0.25)
+    classIds, scores, boxes = model.detect(img, confThreshold=0.5, nmsThreshold=0.25)
+    print(classIds, scores)
     
     for (classId, score, box) in zip(classIds, scores, boxes):
         try:
@@ -51,7 +53,41 @@ def get_detections_by_image_files():
     except FileNotFoundError:
         abort(404)
 
+@app.route('/detections/by-alternate', methods=['POST'])
+def get_detections_by_alternate():
+    filestr = request.files['image']
+    #convert string data to numpy array
+    npimg = np.fromfile(filestr, np.uint8)
+    img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    blob = cv2.dnn.blobFromImage(img, 1/255,(416,416),[0,0,0],crop=False)
+    net.setInput(blob)
+    #layerNames = net.getLayerNames()
+    #outputNames = [layerNames[i[0]-1] for i in net.getUnconnectedOutLayers()]
+    outputNames = net.getUnconnectedOutLayersNames()  
+    outputs = net.forward(outputNames)
+    hT, wT, cT = img.shape
+    responses =[]
 
+    print(outputs)
+
+    for output in outputs:
+            for det in output:
+                    scores = det[5:]
+                    classId = np.argmax(scores)
+                    confidence = scores[classId]
+                    if confidence > confThreshold:
+                            w,h = int(det[2]* wT), int(det[3]*hT)
+                            x,y = int((det[0]*wT)-w/2), int((det[1]*hT)-h/2)
+                            responses.append({
+                                "class": classId,
+                                "confidence": str(confidence),
+                                "box": ([x,y,w,h]).tolist()
+                            })
+
+    try:
+        return Response(response=json.dumps({"response": {"detections": responses}}), mimetype="application/json")
+    except FileNotFoundError:
+        abort(404)
 
 
 #if __name__ == '__main__':
