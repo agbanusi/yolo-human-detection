@@ -24,14 +24,10 @@ def get_detections_by_image_files():
     #convert string data to numpy array
     npimg = np.fromfile(filestr, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-    print(img)
-    print(net, model)
-    
-
     # create list for final response
     responses =[]
    
-    classIds, scores, boxes = model.detect(img, confThreshold=0.55, nmsThreshold=0.35)
+    classIds, scores, boxes = model.detect(img, confThreshold=0.55, nmsThreshold=0.25)
     print(classIds, scores)
     
     for (classId, score, box) in zip(classIds, scores, boxes):
